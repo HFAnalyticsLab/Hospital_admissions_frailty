@@ -36,13 +36,15 @@ Before HES data was used for this analysis, it was cleaned and processed using o
 each hospital episode and calculates the Charlson and Elixhauser comorbidity scores using the 
 R package [comorbidity](https://cran.r-project.org/web/packages/comorbidity/vignettes/comorbidityscores.html). 
 
-In addition, it creates a custom electronic frailty index created by Imperial College London (IMPFRAILTY - see doc/frailty_score.md). This score is based on diagnosis codes from Soong *et al.* but calculated similarly to the electronic Frailty Index (eFI) developed by Clegg *et al.*.
+The HES pipeline also creates a custom electronic frailty index created by Imperial College London (IMPFRAILTY). Additional documentation for this score can be found in doc/frailty_score.md and the R 
+code for the score can be found in the HES pipeline repository. This score is based on diagnosis codes from Soong *et al.* but calculated similarly to the electronic Frailty Index (eFI) developed by Clegg *et al.*.
 
 
 ### Getting started
 
 The 'R' folder contains:
 * analysis_priority_1.R - descriptive analysis of hospital admissions for the most recent available data (Nov 2018 - Oct 2019)
+* [analysis of data from 2015-2019 to be added]
 
 
 ## Useful references
