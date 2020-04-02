@@ -34,13 +34,22 @@ The following R packages (available on CRAN) are needed:
 
 Before HES data was used for this analysis, it was cleaned and processed using our in-house [HES pipeline](https://github.com/HFAnalyticsLab/HES_pipeline). The pipeline flags comorbidities for
 each hospital episode and calculates the Charlson and Elixhauser comorbidity scores using the 
-R package [comorbidity](https://cran.r-project.org/web/packages/comorbidity/vignettes/comorbidityscores.html). In addition, it creates a custom electronic frailty index created by Imperial College London (IMPFRAILTY).
+R package [comorbidity](https://cran.r-project.org/web/packages/comorbidity/vignettes/comorbidityscores.html). 
+
+In addition, it creates a custom electronic frailty index created by Imperial College London (IMPFRAILTY - see doc/frailty_score.md). This score is based on diagnosis codes from Soong *et al.* but calculated similarly to the electronic Frailty Index (eFI) developed by Clegg *et al.*.
 
 
 ### Getting started
 
 The 'R' folder contains:
 * analysis_priority_1.R - descriptive analysis of hospital admissions for the most recent available data (Nov 2018 - Oct 2019)
+
+
+## Useful references
+
+* Soong J, Poots AJ, Scott S, Donald K, Bell D. Developing and validating a risk prediction model for acute care based on frailty syndromes. BMJ Open. 2015;5(10):1-12. doi:10.1136/bmjopen-2015-008457
+* Gilbert T, Neuburger J, Kraindler J, et al. Development and validation of a Hospital Frailty Risk Score focusing on older people in acute care settings using electronic hospital records: an observational study. Lancet. 2018;391(10132):1775-1782. doi:10.1016/S0140-6736(18)30668-8
+* Clegg A, Bates C, Young J, et al. Development and validation of an electronic frailty index using routine primary care electronic health record data. Age Ageing. 2016;45(3):353-360. doi:10.1093/ageing/afw039
 
 ## Authors
 * **Fiona Grimm** - [@fiona_grimm](https://twitter.com/fiona_grimm) - [fiona-grimm](https://github.com/fiona-grimm)
