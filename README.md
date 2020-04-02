@@ -12,7 +12,7 @@ To this end, we are creating historical baseline estimates of the average daily 
 
 ## Data source
 
-We are using Hospital Episodes Statistics (HES) Admitted Patient Care data, covering the time period between 2015 and 2019. The data application for this project has been approved by the NHS Digital [Data Access Request Service (DARS)](https://digital.nhs.uk/services/data-access-request-service-dars).
+We are using Hospital Episodes Statistics (HES) Admitted Patient Care data, covering the time period between 2015 and 2019. The NHS Digital [Data Access Request Service (DARS)](https://digital.nhs.uk/services/data-access-request-service-dars) has approved the data application for this project (DARS-NIC-276970).
 
 Data used for this analysis were anonymised in line with the ICO's Anonymisation Code of Practice. The data were accessed in The Health Foundation's Secure Data Environment, which is a secure data analysis facility (accredited for the ISO27001 information security standard, and recognised for the NHS Digital Data Security and Protection Toolkit). No information was used that could directly identify a patient or other individual. 
 
