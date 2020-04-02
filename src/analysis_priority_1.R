@@ -164,7 +164,7 @@ n_adm_unfinished <- dbGetQuery(db, "SELECT COUNT(*) FROM APC
                                     AND EPISTART IS NOT NULL AND EPIEND IS NOT NULL 
                                     AND EPIKEY IS NOT NULL AND EPISTAT <> 3")
 
-# should be managable in memory
+# should be manageable in memory
 
 # Extract admissions from database ---------------------------------------------
 
