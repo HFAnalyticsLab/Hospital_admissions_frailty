@@ -16,7 +16,7 @@ source("src/vars.R")
 
 # Connect to HES database -------------------------------------------------
 
-db <- DBI::dbConnect(RSQLite::SQLite(), database_path_2019)
+db <- DBI::dbConnect(RSQLite::SQLite(), database_path_2019_VM)
 
 dbListTables(db)
 dbListFields(db, "APC")
@@ -47,7 +47,7 @@ n_adm_unfinished <- dbGetQuery(db, "SELECT COUNT(*) FROM APC
                                     AND EPISTART IS NOT NULL AND EPIEND IS NOT NULL 
                                     AND EPIKEY IS NOT NULL AND EPISTAT <> 3")
 
-# should be manageable in memory
+# should be managable in memory
 
 # Extract admissions from database ---------------------------------------------
 
@@ -211,12 +211,19 @@ walk(c("CHARLSON_WSCORE", "ELIXHAUSER_WSCORE_AHRQ", "ELIXHAUSER_WSCORE_VW"),
 write_2x2frequency_tables(data = FAEs, path = str_c(results_path, "Summaries_2019"), 
                           col1 = "STARTAGE_BANDS_WIDE", col2 = "SEX_FCT")
 
+# Age (under/over 65) vs. Charlson score
+# exclude patients under 18
+
+write_2x2frequency_tables(data = FAEs[FAEs$STARTAGE_Under18 == '18+',], path = str_c(results_path, "Summaries_2019_over18s"), 
+                          col1 = "STARTAGE_OVER65", col2 = "CHARLSON_WSCORE")
+
+
 
 # Admission counts by ADMITYPE and additional vars ----------------------------------------
 
 # All patients
 walk(c("STARTAGE_BANDS_NARROW", "STARTAGE_BANDS_WIDE"), 
-     create_admissions_summary, data = FAEs, path = str_c(results_path, "Admissions_2019_"))
+     create_admissions_summary, data = FAEs, path = str_c(results_path, "Admissions_2019_") )
 
 # Excluding patients under 18 and patients with missing age
 walk(c("IMPFRAILTY_SCORE", "IMPFRAILTY_NORM_SCORE", "IMPFRAILTY_SCORE_TERTILE",
@@ -225,7 +232,10 @@ walk(c("IMPFRAILTY_SCORE", "IMPFRAILTY_NORM_SCORE", "IMPFRAILTY_SCORE_TERTILE",
      create_admissions_summary, data = FAEs[FAEs$STARTAGE_Under18 == '18+',], 
      path = str_c(results_path, "Admissions_2019_"))
 
+# Patients over 65 only
 
+create_admissions_summary(data = FAEs[FAEs$STARTAGE_OVER65 == '>65',], var = "CHARLSON_WSCORE",
+                          path = str_c(results_path, "Over65s_admissions_2019_"))
 
 # Disconnect db -----------------------------------------------------------
 
