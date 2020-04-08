@@ -11,6 +11,8 @@ library(janitor)
 library(lubridate)
 
 source("src/file_paths.R")
+source("src/functions.R")
+source("src/vars.R")
 
 # Connect to HES database -------------------------------------------------
 
@@ -18,125 +20,6 @@ db <- DBI::dbConnect(RSQLite::SQLite(), database_path_2019)
 
 dbListTables(db)
 dbListFields(db, "APC")
-
-# Define variables --------------------------------------------------------
-
-age_breaks_narrow <- c(0, seq(5, 75, by = 5), Inf)
-age_labels_narrow <- c(' 0-4',
-                       str_c(" ", seq(5, 70, by = 5), '-', seq(9, 74, by = 5)), 
-                       ' 75+')
-
-
-age_breaks_wide <- c(0, 5, 15, 25, 45, 60, 80, Inf)
-age_labels_wide <- c(' 0-4', ' 5-14', ' 15-24', ' 25-44', ' 45-60', ' 61-80', ' 80+')
-
-cancer_codes <- c("C.*", "D[0|1|2|3|4].*")
-
-
-# Define functions --------------------------------------------------------
-
-# Calculates the mean of the 5 smallest values in a vector
-# rounded to one decimal place
-# Requires a numeric vector
-# Returns a numeric value
-min_five_mean <- function(x){
-  return(round(mean(head(sort(x), 5)), 1))
-}
-
-# Calculates the mean of the 5 largest values in a vector
-# rounded to one decimal place
-# Requires a numeric vector
-# Returns a numeric value
-max_five_mean <- function(x){
-  return(round(mean(tail(sort(x), 5)), 1))
-}
-
-# Creates a one-way frequency table
-# Requires a dataframe, a column name as a string
-# and a path to save the outputs.
-# Returns nothing, saves a csv file as a side effect
-write_frequency_table <- function(data, col, path){
-  data %>% 
-    tabyl(!!col) %>% 
-    adorn_pct_formatting %>% 
-    write_csv(., str_c(path, "Summaries_2019_Freq_", col, ".csv"))
-}
-
-# Creates a two-way frequency table 
-# Requires a dataframe, two column names as characters 
-# and a path to save the outputs.
-# Returns nothing, saves atwo csv files as a side effect
-write_2x2frequency_tables <- function(data, col1, col2, path){
-  
-  data %>% 
-    tabyl(!!rlang::sym(col1), !!rlang::sym(col2)) %>% 
-    adorn_title() %>% 
-    write_csv(., str_c(path, "Summaries_2019_2x2Freq_", col1, "_", col2, "_n.csv"))
-  
-  data %>% 
-    tabyl(!!rlang::sym(col1), !!rlang::sym(col2)) %>% 
-    adorn_percentages() %>% 
-    adorn_pct_formatting() %>% 
-    adorn_title() %>% 
-    write_csv(., str_c(path, "Summaries_2019_2x2Freq_", col1, "_", col2, "_percent.csv"))
-}
-
-# Creates a summary of the number of admissions by admission category (emergency, 
-# elective non-cancer and elective cancer) by counting daily admissions on a national
-# level and extracting the busiest and least busy day, and by calculating the average 
-# day and the average weekend day.
-# Requires a dataframe with columns EPISTART, EPISTART_WEEKEND_FLAG, ADMITYPE, 
-# a column name as a character to stratify the results and a path to save the outputs.
-# Returns nothing, saves a csv file as a side effect
-create_admissions_summary <- function(data, var, path){
-  
-  # overall summary
-  daily_adm <- FAEs %>% 
-    group_by(EPISTART, ADMITYPE, !!rlang::sym(var)) %>% 
-    summarise(n = n()) %>% 
-    ungroup() %>% 
-    complete(EPISTART, ADMITYPE, !!rlang::sym(var), fill = list(n = 0))
-  
-  summary <- daily_adm %>% 
-    group_by(ADMITYPE, !!rlang::sym(var)) %>% 
-    summarise(average_day = round(mean(n), 1),
-              busiest_day = max(n),
-              leastbusy_day = min(n),
-              n_days = n())
-  
-  # weekday summary
-  daily_adm_weekday <- FAEs %>% 
-    filter(EPISTART_WEEKEND_FLAG == FALSE) %>% 
-    group_by(EPISTART, ADMITYPE, !!rlang::sym(var)) %>% 
-    summarise(n = n()) %>% 
-    ungroup() %>% 
-    complete(EPISTART, ADMITYPE, !!rlang::sym(var), fill = list(n = 0))
-  
-  summary_weekday <- daily_adm_weekday %>% 
-    group_by(ADMITYPE,!!rlang::sym(var)) %>% 
-    summarise(average_week_day = round(mean(n), 1),
-              n_days_week = n())
-  
-  # weekend summary
-  daily_adm_weekend <- FAEs %>% 
-    filter(EPISTART_WEEKEND_FLAG == TRUE) %>% 
-    group_by(EPISTART, ADMITYPE, !!rlang::sym(var)) %>% 
-    summarise(n = n()) %>% 
-    ungroup() %>% 
-    complete(EPISTART, ADMITYPE, !!rlang::sym(var), fill = list(n = 0))
-  
-  summary_weekend <- daily_adm_weekend %>% 
-    group_by(ADMITYPE,!!rlang::sym(var)) %>% 
-    summarise(average_weekend_day = round(mean(n), 1),
-              n_days_weekend = n())
-  
-  summary_combined <- summary %>% 
-    left_join(summary_weekday, by = c("ADMITYPE", var)) %>% 
-    left_join(summary_weekend, by = c("ADMITYPE", var))
-  
-  write_csv(summary_combined, str_c(path, "Admissions_2019_", var, ".csv"))
-  
-}
 
 # Number of records  ------------------------------------------------------
 
@@ -295,7 +178,7 @@ vars_to_summarise_1D <- c("IMPFRAILTY_SCORE", "IMPFRAILTY_NORM_SCORE", "CHARLSON
                        "STARTAGE_BANDS_WIDE", "SEX_FCT", "ADMITYPE", "STARTAGE_SDC")
 
 walk(vars_to_summarise_1D, 
-     write_frequency_table, data = FAEs, path = results_path)
+     write_frequency_table, data = FAEs, path = str_c(results_path, "Summaries_2019"))
 
 # Histogram of startage
 age_histogram <- FAEs %>% 
@@ -317,15 +200,15 @@ vars_to_summarise_2D <- c("IMPFRAILTY_SCORE", "IMPFRAILTY_NORM_SCORE", "CHARLSON
 
 # Scores vs. wide age bands
 walk(vars_to_summarise_2D, write_2x2frequency_tables, data = FAEs, 
-     path = results_path, col1 = "STARTAGE_BANDS_WIDE")
+     path = str_c(results_path, "Summaries_2019"), col1 = "STARTAGE_BANDS_WIDE")
 
 # Scores vs. frailty
 walk(c("CHARLSON_WSCORE", "ELIXHAUSER_WSCORE_AHRQ", "ELIXHAUSER_WSCORE_VW"), 
      write_2x2frequency_tables, data = FAEs, 
-     path = results_path, col1 = "IMPFRAILTY_SCORE")
+     path = str_c(results_path, "Summaries_2019"), col1 = "IMPFRAILTY_SCORE")
 
 # Age vs. sex
-write_2x2frequency_tables(data = FAEs, path = results_path, 
+write_2x2frequency_tables(data = FAEs, path = str_c(results_path, "Summaries_2019"), 
                           col1 = "STARTAGE_BANDS_WIDE", col2 = "SEX_FCT")
 
 
@@ -333,10 +216,17 @@ write_2x2frequency_tables(data = FAEs, path = results_path,
 
 # All patients
 walk(c("STARTAGE_BANDS_NARROW", "STARTAGE_BANDS_WIDE"), 
-     create_admissions_summary, data = FAEs, path = results_path)
+     create_admissions_summary, data = FAEs, path = str_c(results_path, "Admissions_2019_"))
 
 # Excluding patients under 18 and patients with missing age
 walk(c("IMPFRAILTY_SCORE", "IMPFRAILTY_NORM_SCORE", "IMPFRAILTY_SCORE_TERTILE",
        "CHARLSON_WSCORE", "ELIXHAUSER_WSCORE_AHRQ", "ELIXHAUSER_WSCORE_VW",
        "STARTAGE_CHARLSON", "STARTAGE_FRAIL"), 
-     create_admissions_summary, data = FAEs[FAEs$STARTAGE_Under18 == '18+',], path = results_path)
+     create_admissions_summary, data = FAEs[FAEs$STARTAGE_Under18 == '18+',], 
+     path = str_c(results_path, "Admissions_2019_"))
+
+
+
+# Disconnect db -----------------------------------------------------------
+
+dbDisconnect(db)
