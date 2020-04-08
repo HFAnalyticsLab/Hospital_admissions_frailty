@@ -43,8 +43,10 @@ code for the score can be found in the HES pipeline repository. This score is ba
 ### Getting started
 
 The 'R' folder contains:
+* functions.R - shared functions
+* vars.R - shared analysis parameters
 * analysis_priority_1.R - descriptive analysis of hospital admissions for the most recent available data (Nov 2018 - Oct 2019)
-* [analysis of data from 2015-2019 to be added]
+* analysis_priority_2 .R descriptive analysis of hospital admissions by year (2015 to 2019)
 
 
 ## Useful references
